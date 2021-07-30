@@ -13,7 +13,8 @@
     "build": "tsc",
     "prepublish": "del 'dist/test'",
     "prepack": "del 'dist/test'",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "semantic-release": "semantic-release"
   },
   "keywords": [],
   "author": "",
