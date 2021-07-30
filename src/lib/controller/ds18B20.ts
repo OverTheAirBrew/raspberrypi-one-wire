@@ -15,16 +15,12 @@ export class DS18B20Controller extends BaseController {
   }
 
   protected async parseData(rawData: string) {
-    const data = rawData.split('\n');
+    const data = rawData.split('t=');
 
     if (data.length !== 2) {
       throw new Error('Raw data does not have a valid length');
     }
 
-    // const line1 = rawData[0].split(':');
-
-    const line2 = data[1].split(' ');
-    const rawTemperature = parseInt(line2[line2.length - 1].replace('t=', ''));
-    return rawTemperature / 1000;
+    return parseInt(data[1]) / 1000
   }
 }
