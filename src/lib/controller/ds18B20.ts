@@ -21,6 +21,6 @@ export class DS18B20Controller extends BaseController {
       throw new Error('Raw data does not have a valid length');
     }
 
-    return parseInt(data[1]) / 1000
+    return parseInt(data[1].replace('\n', '')) / 1000
   }
 }

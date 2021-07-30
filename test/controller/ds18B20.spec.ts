@@ -7,7 +7,7 @@ setGracefulCleanup();
 
 const VALID_RAW_DATA =
   '72 01 4b 46 7f ff 0e 10 57 : crc=57 YES\n' +
-  '72 01 4b 46 7f ff 0e 10 57 t=23125';
+  '72 01 4b 46 7f ff 0e 10 57 t=23125\n';
 
 describe('lib/controllers/ds18B20', () => {
   let tempDevice: FileResult;
