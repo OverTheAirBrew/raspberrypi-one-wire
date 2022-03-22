@@ -1,3 +1,4 @@
+import { SensorNotFoundError } from "../../errors/sensor-not-found-error";
 import { BaseController } from "./base";
 
 interface IStreamDevice {
@@ -22,7 +23,9 @@ export class StreamController extends BaseController {
     )?.expectedValues;
 
     if (!values || !values.length || this.index === values.length) {
-      throw new Error("No values");
+      throw new SensorNotFoundError(
+        `Sensor with address ${deviceName} not found`
+      );
     }
 
     try {

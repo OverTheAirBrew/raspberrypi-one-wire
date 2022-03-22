@@ -32,7 +32,7 @@ describe("plugin/one-wire", () => {
             await controller.getCurrentValue("");
             expect.fail("should have thrown an error");
           } catch (err) {
-            expect(err.message).to.eq("No values");
+            expect(err.message).to.eq(`Sensor with address  not found`);
           }
         });
 
@@ -45,7 +45,7 @@ describe("plugin/one-wire", () => {
             await controller.getCurrentValue("");
             expect.fail("should have thrown an error");
           } catch (err) {
-            expect(err.message).to.eq("No values");
+            expect(err.message).to.eq(`Sensor with address  not found`);
           }
         });
 
@@ -84,7 +84,7 @@ describe("plugin/one-wire", () => {
 
             expect.fail("should have errored");
           } catch (err) {
-            expect(err.message).to.eq("No values");
+            expect(err.message).to.eq(`Sensor with address 1234 not found`);
           }
         });
       });
@@ -165,7 +165,7 @@ describe("plugin/one-wire", () => {
             await controller.getCurrentValue(invalidDevice.name);
             expect.fail("should have thrown an error");
           } catch (err) {
-            expect(err.message).to.eq("Raw data is not in the expected format");
+            expect(err.message).to.eq(`Raw data is not in the expected format`);
           }
         });
 
@@ -183,26 +183,15 @@ describe("plugin/one-wire", () => {
             await controller.getCurrentValue(validDevice.name);
             expect.fail("should have throw an error");
           } catch (err) {
-            expect(err.message).to.eq("One wire sensor does not exist");
+            expect(err.message).to.eq(
+              `Sensor with address ${validDevice.name} not found`
+            );
           }
         });
 
         it("should return a valid temp if the file is available", async () => {
           const result = await controller.getCurrentValue(validDevice.name);
           expect(result.celcius).to.eq(23.125);
-        });
-
-        it("should error if the device does not exist", async () => {
-          validDevice.removeCallback();
-
-          const controller = new DS18B20Controller();
-
-          try {
-            await controller.getCurrentValue(validDevice.name);
-            expect.fail("should have throw an error");
-          } catch (err) {
-            expect(err.message).to.eq("One wire sensor does not exist");
-          }
         });
       });
     });

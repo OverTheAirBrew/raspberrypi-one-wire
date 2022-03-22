@@ -1,6 +1,8 @@
 import { sync } from "fast-glob";
 import { existsSync, readFileSync } from "fs";
 import { normalize } from "path";
+import { DataIncorrectFormatError } from "../../errors/incorrect-data-format-error";
+import { SensorNotFoundError } from "../../errors/sensor-not-found-error";
 import { BaseController } from "./base";
 
 export class DS18B20Controller extends BaseController {
@@ -17,7 +19,9 @@ export class DS18B20Controller extends BaseController {
 
   protected async readData(deviceName: string) {
     if (!existsSync(deviceName)) {
-      throw new Error("One wire sensor does not exist");
+      throw new SensorNotFoundError(
+        `Sensor with address ${deviceName} not found`
+      );
     }
 
     return readFileSync(deviceName).toString("utf-8");
@@ -27,7 +31,9 @@ export class DS18B20Controller extends BaseController {
     const data = rawData.split("t=");
 
     if (data.length !== 2) {
-      throw new Error("Raw data is not in the expected format");
+      throw new DataIncorrectFormatError(
+        "Raw data is not in the expected format"
+      );
     }
 
     return parseInt(data[1].replace("\n", "")) / 1000;
