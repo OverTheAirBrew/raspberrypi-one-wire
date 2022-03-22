@@ -3,6 +3,9 @@ jobs:
   build:
     docker:
       - image: 'circleci/node:14'
+    environment:
+      HUSKY: '0'
+      CI: 'true'
     steps:
       - checkout
       - run:
