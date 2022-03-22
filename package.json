@@ -54,5 +54,8 @@
     "extends": [
       "@commitlint/config-conventional"
     ]
+  },
+  "dependencies": {
+    "fast-glob": "^3.2.11"
   }
 }
