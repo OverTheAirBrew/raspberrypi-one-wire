@@ -1,7 +1,8 @@
-import { Temperature } from '../model/temperature';
+import { IOneWireController } from "../i-one-wire-controller";
+import { Temperature } from "../model/temperature";
 
-export abstract class BaseController {
-  public async current() {
+export abstract class BaseController implements IOneWireController {
+  public async current(): Promise<Temperature> {
     const rawData = await this.readData();
     const parsedData = await this.parseData(rawData);
     return new Temperature(parsedData);
