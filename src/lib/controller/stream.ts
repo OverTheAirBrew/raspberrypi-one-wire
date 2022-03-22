@@ -1,23 +1,36 @@
-import { BaseController } from './base';
+import { BaseController } from "./base";
+
+interface IStreamDevice {
+  address: string;
+  expectedValues: number[];
+}
 
 export class StreamController extends BaseController {
   private index = 0;
 
-  constructor(private repeatable: boolean, private values: number[]) {
+  constructor(private repeatable: boolean, private devices: IStreamDevice[]) {
     super();
   }
 
-  protected async readData() {
-    if (this.index === this.values.length) {
-      throw new Error('No values');
+  public async findDevices(hint?: string): Promise<string[]> {
+    return this.devices.map((device) => device.address);
+  }
+
+  protected async readData(deviceName: string) {
+    const values = this.devices.find(
+      (dev) => dev.address === deviceName
+    )?.expectedValues;
+
+    if (!values || !values.length || this.index === values.length) {
+      throw new Error("No values");
     }
 
     try {
-      return `${this.values[this.index]}`;
+      return `${values[this.index]}`;
     } finally {
       this.index++;
       if (this.repeatable) {
-        this.index %= this.values.length;
+        this.index %= values.length;
       }
     }
   }

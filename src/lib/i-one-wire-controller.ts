@@ -2,7 +2,8 @@ import { ClassType } from "./class-type";
 import { Temperature } from "./model/temperature";
 
 export interface IOneWireController {
-  current(): Promise<Temperature>;
+  getCurrentValue(deviceName: string): Promise<Temperature>;
+  findDevices(hint?: string): Promise<string[]>;
 }
 
 export const IOneWireController =
