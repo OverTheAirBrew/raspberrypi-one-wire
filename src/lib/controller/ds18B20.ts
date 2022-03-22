@@ -10,21 +10,22 @@ export class DS18B20Controller extends BaseController {
     super();
   }
 
-  public async findDevices(hint?: string): Promise<string[]> {
-    const pattern = hint ?? "/sys/bus/w1/devices/28-*/w1_slave";
-    const files = sync(pattern);
+  public async findDevices(): Promise<string[]> {
+    const files = sync("/sys/bus/w1/devices/28-*/w1_slave");
     const normalizedFiles = files.map((file) => normalize(file));
     return normalizedFiles;
   }
 
   protected async readData(deviceName: string) {
-    if (!existsSync(deviceName)) {
+    const devicePath = `/sys/bus/w1/devices/${deviceName}/w1_slave`;
+
+    if (!existsSync(devicePath)) {
       throw new SensorNotFoundError(
         `Sensor with address ${deviceName} not found`
       );
     }
 
-    return readFileSync(deviceName).toString("utf-8");
+    return readFileSync(devicePath).toString("utf-8");
   }
 
   protected async parseData(rawData: string) {

@@ -1,7 +1,8 @@
 {
   "all": true,
   "include": [
-    "dist/src/**"
+    "dist/src/**",
+    "src/**"
   ],
   "exclude": [
   ],

@@ -1,13 +1,9 @@
 import { expect } from "chai";
 import * as glob from "fast-glob";
-import { writeSync } from "fs";
-import { dirname } from "path";
-import { FileResult, fileSync, setGracefulCleanup } from "tmp";
+import * as fs from "fs";
 import sinon from "ts-sinon";
 import { DS18B20Controller, StreamController } from "../src";
 import { Temperature } from "../src/lib/model/temperature";
-
-setGracefulCleanup();
 
 describe("plugin/one-wire", () => {
   afterEach(() => {
@@ -91,41 +87,17 @@ describe("plugin/one-wire", () => {
     });
 
     describe("D218B20Controller", () => {
-      let validDevice: FileResult;
-      let invalidDevice: FileResult;
-
       let controller: DS18B20Controller;
 
       const VALID_RAW_DATA =
         "72 01 4b 46 7f ff 0e 10 57 : crc=57 YES\n" +
         "72 01 4b 46 7f ff 0e 10 57 t=23125\n";
 
-      const prefix = "raspi-1wire-temp-unittest-";
-      const postfix = ".dev";
-
       beforeEach(() => {
-        validDevice = fileSync({
-          mode: 0o644,
-          prefix,
-          postfix,
-        });
-
-        invalidDevice = fileSync({
-          mode: 0o644,
-          prefix,
-          postfix,
-        });
-
-        writeSync(validDevice.fd, VALID_RAW_DATA);
-        writeSync(invalidDevice.fd, "ERROR");
-
         controller = new DS18B20Controller();
       });
 
-      afterEach(() => {
-        validDevice.removeCallback();
-        invalidDevice.removeCallback();
-      });
+      afterEach(() => {});
 
       describe("findDevices", () => {
         let globSpy: sinon.SinonSpy;
@@ -134,7 +106,7 @@ describe("plugin/one-wire", () => {
           globSpy = sinon.spy(glob, "sync");
         });
 
-        it("should work without a hint", async () => {
+        it("should get the sensors from the correct location", async () => {
           const devices = await controller.findDevices();
           expect(devices).to.be.instanceOf(Array);
 
@@ -143,26 +115,15 @@ describe("plugin/one-wire", () => {
           const [pattern] = globSpy.firstCall.args;
           expect(pattern).to.eq("/sys/bus/w1/devices/28-*/w1_slave");
         });
-
-        it("should work with a hint", async () => {
-          const tempDir = dirname(validDevice.name);
-          const pattern = `${tempDir}/${prefix}*${postfix}`;
-
-          const devices = await controller.findDevices(pattern);
-
-          expect(devices).to.have.lengthOf(2);
-
-          expect(globSpy.callCount).to.eq(1);
-
-          const [syncPattern] = globSpy.firstCall.args;
-          expect(syncPattern).to.eq(pattern);
-        });
       });
 
       describe("getCurrentValue", () => {
         it("should throw an error if the data is invalid", async () => {
+          sinon.stub(fs, "existsSync").returns(true);
+          sinon.stub(fs, "readFileSync").returns(Buffer.from("INVALID"));
+
           try {
-            await controller.getCurrentValue(invalidDevice.name);
+            await controller.getCurrentValue("TEST");
             expect.fail("should have thrown an error");
           } catch (err) {
             expect(err.message).to.eq(`Raw data is not in the expected format`);
@@ -170,28 +131,22 @@ describe("plugin/one-wire", () => {
         });
 
         it("should return a valid temp if the file is available", async () => {
-          const result = await controller.getCurrentValue(validDevice.name);
+          sinon.stub(fs, "existsSync").returns(true);
+          sinon.stub(fs, "readFileSync").returns(Buffer.from(VALID_RAW_DATA));
+
+          const result = await controller.getCurrentValue("TEST");
           expect(result.celcius).to.eq(23.125);
         });
 
         it("should error if the device does not exist", async () => {
-          validDevice.removeCallback();
-
           const controller = new DS18B20Controller();
 
           try {
-            await controller.getCurrentValue(validDevice.name);
+            await controller.getCurrentValue("TEST");
             expect.fail("should have throw an error");
           } catch (err) {
-            expect(err.message).to.eq(
-              `Sensor with address ${validDevice.name} not found`
-            );
+            expect(err.message).to.eq(`Sensor with address TEST not found`);
           }
-        });
-
-        it("should return a valid temp if the file is available", async () => {
-          const result = await controller.getCurrentValue(validDevice.name);
-          expect(result.celcius).to.eq(23.125);
         });
       });
     });
